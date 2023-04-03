@@ -37,7 +37,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: tvl-labs/blockscan
+          images: |
+            ghcr.io/${{github.repository}}
+          tags: |
+            type=ref,event=tag
+          flavor: |
+            latest=false
 
       - name: Add SHORT_SHA env property with commit short sha
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
@@ -54,9 +59,8 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: true
-          cache-from: type=registry,ref=tvl-labs/blockscan:buildcache
-          cache-to: type=registry,ref=tvl-labs/blockscan:buildcache,mode=max
-          tags: tvl-labs/blockscan:latest, tvl-labs/blockscan:${{ env.NEXT_RELEASE_VERSION }}-prerelease-${{ env.SHORT_SHA }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CACHE_EXCHANGE_RATES_PERIOD=
             DISABLE_READ_API=false
@@ -67,24 +71,24 @@ jobs:
             ADMIN_PANEL_ENABLED=false
             CACHE_ADDRESS_WITH_BALANCES_UPDATE_INTERVAL=
 
-      - name: Build and push Docker image for frontend
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          cache-from: type=registry,ref=tvl-labs/blockscan:buildcache
-          tags: tvl-labs/blockscan:frontend-main
-          build-args: |
-            CACHE_EXCHANGE_RATES_PERIOD=
-            DISABLE_READ_API=false
-            DISABLE_WEBAPP=false
-            DISABLE_WRITE_API=false
-            CACHE_ENABLE_TOTAL_GAS_USAGE_COUNTER=
-            WOBSERVER_ENABLED=false
-            ADMIN_PANEL_ENABLED=false
-            CACHE_ADDRESS_WITH_BALANCES_UPDATE_INTERVAL=
-            SESSION_COOKIE_DOMAIN=${{ secrets.FRONTEND_MAIN }}
+      # - name: Build and push Docker image for frontend
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     context: .
+      #     file: ./docker/Dockerfile
+      #     push: true
+      #     cache-from: type=registry,ref=tvl-labs/blockscan:buildcache
+      #     tags: tvl-labs/blockscan:frontend-main
+      #     build-args: |
+      #       CACHE_EXCHANGE_RATES_PERIOD=
+      #       DISABLE_READ_API=false
+      #       DISABLE_WEBAPP=false
+      #       DISABLE_WRITE_API=false
+      #       CACHE_ENABLE_TOTAL_GAS_USAGE_COUNTER=
+      #       WOBSERVER_ENABLED=false
+      #       ADMIN_PANEL_ENABLED=false
+      #       CACHE_ADDRESS_WITH_BALANCES_UPDATE_INTERVAL=
+      #       SESSION_COOKIE_DOMAIN=${{ secrets.FRONTEND_MAIN }}
   # tests:
   #   needs: push_to_registry
   #   uses: tvl-labs/blockscan-ci-cd/.github/workflows/e2e_new.yaml@master
