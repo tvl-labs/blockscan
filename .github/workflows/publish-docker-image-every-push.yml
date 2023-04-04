@@ -71,22 +71,3 @@ jobs:
             WOBSERVER_ENABLED=false
             ADMIN_PANEL_ENABLED=false
             CACHE_ADDRESS_WITH_BALANCES_UPDATE_INTERVAL=
-
-      - name: Build and push Docker image for frontend
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          cache-from: type=registry,ref=ghcr.io/${{github.repository}}:buildcache
-          tags: ghcr.io/${{github.repository}}:frontend-main
-          build-args: |
-            CACHE_EXCHANGE_RATES_PERIOD=
-            DISABLE_READ_API=false
-            DISABLE_WEBAPP=false
-            DISABLE_WRITE_API=false
-            CACHE_ENABLE_TOTAL_GAS_USAGE_COUNTER=
-            WOBSERVER_ENABLED=false
-            ADMIN_PANEL_ENABLED=false
-            CACHE_ADDRESS_WITH_BALANCES_UPDATE_INTERVAL=
-            SESSION_COOKIE_DOMAIN=${{ secrets.FRONTEND_MAIN }}
